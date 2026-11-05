@@ -52,6 +52,10 @@ async def init():
         _pool = None
 
 
+def backend() -> str:
+    return "postgres" if _pool else "ram"
+
+
 async def close():
     if _pool:
         await _pool.close()

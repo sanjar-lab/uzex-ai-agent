@@ -55,14 +55,18 @@ SHORT = {
 
 COMMANDS = {
     "": [
-        ("start", "Boshlash va savol namunalari"),
-        ("about", "Bot qanday ishlaydi, maʼlumotlar manbasi"),
-        ("new", "Yangi suhbat (kontekstni tozalash)"),
+        ("start", "Boshlash"),
+        ("examples", "Namuna savollar"),
+        ("about", "Bot qanday ishlaydi"),
+        ("new", "Yangi suhbat"),
+        ("web", "Veb-versiya"),
     ],
     "ru": [
-        ("start", "Начать и примеры вопросов"),
-        ("about", "Как работает бот, источник данных"),
-        ("new", "Новый диалог (сбросить контекст)"),
+        ("start", "Начать"),
+        ("examples", "Примеры вопросов"),
+        ("about", "Как работает бот"),
+        ("new", "Новый диалог"),
+        ("web", "Веб-версия"),
     ],
 }
 
