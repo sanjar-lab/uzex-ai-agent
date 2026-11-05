@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: uzex-ai-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.server
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: GEMINI_API_KEYS
+        sync: false
+      - key: GROQ_API_KEYS
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash,gemini-3-flash-preview
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: WEBHOOK_SECRET
+        generateValue: true

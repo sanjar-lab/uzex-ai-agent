@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+uzex_spot_data/
+data/*.wal
+tests/*.log
