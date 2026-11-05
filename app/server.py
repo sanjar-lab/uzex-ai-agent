@@ -3,6 +3,7 @@
 Run:  python -m app.server        (PORT env, default 8000)
 """
 import asyncio
+import hashlib
 import html
 import logging
 import os
@@ -30,7 +31,9 @@ log = logging.getLogger("server")
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 PUBLIC_URL = (os.getenv("PUBLIC_URL") or os.getenv("RENDER_EXTERNAL_URL") or "").rstrip("/")
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET") or secrets.token_hex(16)
+# Telegram allows only [A-Za-z0-9_-] (1-256 chars); Render's generated values may contain + / =, so hash them.
+_raw_secret = os.getenv("WEBHOOK_SECRET") or TOKEN or secrets.token_hex(16)
+WEBHOOK_SECRET = hashlib.sha256(_raw_secret.encode()).hexdigest()
 HISTORY: dict[int, deque] = defaultdict(lambda: deque(maxlen=2))
 
 START_TEXT = (
@@ -158,9 +161,12 @@ async def lifespan(_: FastAPI):
         await BOT.start()
         if PUBLIC_URL:
             url = f"{PUBLIC_URL}/tg/webhook"
-            await BOT.bot.set_webhook(url, secret_token=WEBHOOK_SECRET, drop_pending_updates=False,
-                                      allowed_updates=["message"])
-            log.info("Telegram webhook set: %s", url)
+            try:
+                await BOT.bot.set_webhook(url, secret_token=WEBHOOK_SECRET, drop_pending_updates=False,
+                                          allowed_updates=["message"])
+                log.info("Telegram webhook set: %s", url)
+            except Exception:  # noqa: BLE001 — never let Telegram issues kill the web service
+                log.exception("set_webhook failed")
         else:
             await BOT.bot.delete_webhook()
             await BOT.updater.start_polling(allowed_updates=["message"])
