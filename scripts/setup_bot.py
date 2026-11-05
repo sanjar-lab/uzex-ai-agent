@@ -24,29 +24,33 @@ NAME = "UZEX AI-agent"
 DESCRIPTION = {
     # shown in the empty chat before the user presses START (max 512 chars)
     "": (
-        "UZEX birja bitimlari reyestri boʻyicha AI-agent.\n\n"
-        "• 500 000 bitim (2022–2026), shartnomalar, ishtirokchilar, brokerlar, dollar kursi\n"
-        "• Savolni oʻzbek (lotin/kirill) yoki rus tilida bering\n"
-        "• Javob faqat maʼlumotlar asosida: aniq raqam, nom, STIR, kod\n"
-        "• Maʼlumot boʻlmasa — ochiq aytadi, oʻylab topmaydi\n"
-        "• Har bir javob ostida u asoslangan SQL soʻrov koʻrsatiladi\n\n"
-        "Boshlash uchun START ni bosing."
+        "Salom! Men UZEX birjasidagi bitimlar haqidagi savollarga javob beradigan AI-yordamchiman.\n\n"
+        "📊 Bazada: 500 000 ta bitim (2022–2026), shartnomalar, kompaniyalar, brokerlar, dollar kursi.\n\n"
+        "❓ Masalan, soʻrang:\n"
+        "— 2025-yilda eng koʻp bitim tuzgan sotuvchi kim?\n"
+        "— Karbamid boʻyicha 2024-yildagi jami summa qancha?\n\n"
+        "✅ Javob faqat maʼlumotlardan: aniq raqam, nom, STIR.\n"
+        "🔎 Har javob ostida u qayerdan olingani koʻrinadi.\n"
+        "🚫 Maʼlumotda javob boʻlmasa — ochiq aytaman.\n\n"
+        "Oʻzbek yoki rus tilida yozing 👇"
     ),
     "ru": (
-        "AI-агент по реестру биржевых сделок UZEX.\n\n"
-        "• 500 000 сделок (2022–2026), контракты, участники, брокеры, курс доллара\n"
-        "• Спрашивайте на русском или узбекском (латиница/кириллица)\n"
-        "• Ответ строго по данным: точные цифры, названия, ИНН, коды\n"
-        "• Если в данных ответа нет — так и скажет, без выдумок\n"
-        "• Под каждым ответом виден SQL-запрос, на котором он основан\n\n"
-        "Нажмите START, чтобы начать."
+        "Здравствуйте! Я AI-помощник: отвечаю на вопросы о сделках биржи UZEX.\n\n"
+        "📊 В базе: 500 000 сделок (2022–2026), контракты, компании, брокеры, курс доллара.\n\n"
+        "❓ Например, спросите:\n"
+        "— Кто из продавцов заключил больше всего сделок в 2025 году?\n"
+        "— Какая общая сумма сделок по карбамиду в 2024 году?\n\n"
+        "✅ Ответ только по данным: точные цифры, названия, ИНН.\n"
+        "🔎 Под каждым ответом видно, откуда он взят.\n"
+        "🚫 Если в данных ответа нет — честно скажу.\n\n"
+        "Пишите на русском или узбекском 👇"
     ),
 }
 
 SHORT = {
     # shown on the bot profile page and in shared links (max 120 chars)
-    "": "Birja bitimlari boʻyicha savollarga faqat maʼlumotlar asosida javob beruvchi AI-agent. UZ / RU",
-    "ru": "AI-агент: отвечает на вопросы о биржевых сделках строго по данным реестра. RU / UZ",
+    "": "UZEX birja bitimlari boʻyicha AI-yordamchi: aniq raqamlar, faqat maʼlumotlardan. Oʻzbek va rus tilida.",
+    "ru": "AI-помощник по сделкам биржи UZEX: точные цифры строго по данным. На русском и узбекском.",
 }
 
 COMMANDS = {

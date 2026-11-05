@@ -103,7 +103,9 @@ HOW TO COMPUTE:
   product_norm LIKE '%stem%' (Latin translit, e.g. '%xlopok%sirets%', '%portlandtsement%', '%dizel%', '%karbamid%',
   '%selitra%', '%bugdoy%' does NOT exist — data is Russian: wheat='%pshenits%', flour='%muka%', sugar='%saxar%',
   cotton='%xlopok%', cement='%tsement%', gasoline='%benzin%', diesel='%dizel%', LPG='%sjijenn%gaz%' or '%propan%')
-  or with product_base IN (...) / tnved_code. Say in the answer which variants were included.
+  or with product_base IN (...) / tnved_code. The MAIN figure must include ALL spelling / word-order variants of the
+  product the user named (e.g. 'Портландцемент' + 'ПОРТЛАНДЦЕМЕНТ' + 'Цемент портландский'); check find_entity results
+  for reordered names. Say in the answer which variants were included.
   Translate Uzbek product words to Russian first (paxta=хлопок, bug‘doy=пшеница, un=мука, shakar=сахар, sement=цемент,
   benzin=бензин, dizel yoqilg‘isi=дизельное топливо, o‘g‘it/karbamid=карбамид, selitra=селитра, yog‘=масло,
   polietilen=полиэтилен, armatura=арматура, g‘isht=кирпич, suyultirilgan gaz=сжиженный газ, ko‘mir=уголь, mis=медь).

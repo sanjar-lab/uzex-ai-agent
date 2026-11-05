@@ -19,11 +19,21 @@ from openai import AsyncOpenAI
 log = logging.getLogger("llm")
 
 FAMILIES = {
+    "claude": {
+        # Anthropic's OpenAI-compatible endpoint — same tool-calling loop for every provider
+        "base_url": "https://api.anthropic.com/v1/",
+        "keys_env": "ANTHROPIC_API_KEYS",
+        "model_env": "CLAUDE_MODEL",
+        "default_model": "claude-sonnet-5-5",
+        "reasoning_env": "CLAUDE_REASONING",
+        "default_reasoning": "",
+    },
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "keys_env": "GEMINI_API_KEYS",
         "model_env": "GEMINI_MODEL",
-        "default_model": "gemini-3.5-flash,gemini-3-flash-preview",
+        # tried in this order on the 1st (pro) key, then the same list on the next keys
+        "default_model": "gemini-3.5-flash,gemini-3-flash-preview,gemini-3.1-flash-lite,gemini-3.5-flash-lite",
         "reasoning_env": "GEMINI_REASONING",
         "default_reasoning": "low",
     },
@@ -65,8 +75,8 @@ def _load() -> dict[str, list[Provider]]:
     for fam, f in FAMILIES.items():
         keys = [k.strip() for k in os.getenv(f["keys_env"], "").replace(";", ",").split(",") if k.strip()]
         models = [m.strip() for m in os.getenv(f["model_env"], f["default_model"]).split(",") if m.strip()]
-        # order: model1 x all keys, then model2 x all keys ...
-        out[fam] = [Provider(fam, k, i + 1, m) for m in models for i, k in enumerate(keys)]
+        # order: key1 x all models (strong -> lighter), then key2 x all models, ...
+        out[fam] = [Provider(fam, k, i + 1, m) for i, k in enumerate(keys) for m in models]
     return out
 
 
@@ -88,7 +98,7 @@ def configured() -> list[str]:
 
 
 def _ordered() -> list[Provider]:
-    order = [x.strip() for x in os.getenv("LLM_ORDER", "gemini,groq,openrouter").split(",") if x.strip()]
+    order = [x.strip() for x in os.getenv("LLM_ORDER", "claude,gemini,groq,openrouter").split(",") if x.strip()]
     res = []
     for fam in order:
         ps = providers().get(fam, [])
@@ -135,7 +145,11 @@ async def chat(messages: list[dict], tools: list[dict] | None = None, prefer: st
     for p in cands:
         if deadline and time.time() > deadline - 3:
             break
-        kwargs = dict(model=p.model, messages=_clean_messages(messages, p.family), temperature=0)
+        kwargs = dict(model=p.model, messages=_clean_messages(messages, p.family))
+        if p.family != "claude":  # newer Claude models reject `temperature`
+            kwargs["temperature"] = 0
+        else:
+            kwargs["max_tokens"] = 2000
         if tools:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
@@ -160,8 +174,14 @@ async def chat(messages: list[dict], tools: list[dict] | None = None, prefer: st
             status = getattr(e, "status_code", None)
             log.warning("LLM %s failed (%s): %s", p.name, status, s[:300])
             errors.append(f"{p.name}: {status} {s[:120]}")
-            if status == 429 or "quota" in s.lower() or "rate" in s.lower():
+            low = s.lower()
+            if any(w in low for w in ("credit balance", "billing", "insufficient", "exceeded your current quota",
+                                      "per day", "perday", "daily")):
+                p.cooldown_until = time.time() + 1800  # exhausted for the day/credits -> skip for 30 min
+            elif status == 429 or "quota" in low or "rate" in low:
                 p.cooldown_until = time.time() + 60
+            elif status == 404:
+                p.cooldown_until = time.time() + 3600  # model retired / not available on this key
             elif status in (401, 403):
                 p.cooldown_until = time.time() + 3600
             elif status and status >= 500:
