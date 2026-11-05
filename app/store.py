@@ -31,7 +31,41 @@ CREATE TABLE IF NOT EXISTS uzex.messages (
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS messages_chat_idx ON uzex.messages (chat_id, id DESC);
+CREATE TABLE IF NOT EXISTS uzex.answer_cache (
+  key         text PRIMARY KEY,
+  answer      text NOT NULL,
+  queries     jsonb,
+  provider    text,
+  seconds     real,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
 """
+
+
+async def cache_get(key: str) -> dict | None:
+    if not _pool:
+        return None
+    try:
+        r = await _pool.fetchrow("SELECT answer, queries, provider, seconds FROM uzex.answer_cache WHERE key = $1", key)
+        if r:
+            return {"answer": r["answer"], "queries": json.loads(r["queries"] or "[]"), "provider": r["provider"] or "",
+                    "seconds": r["seconds"] or 0.0}
+    except Exception:  # noqa: BLE001
+        log.exception("cache_get failed")
+    return None
+
+
+async def cache_put(key: str, answer: str, queries: list, provider: str, seconds: float):
+    if not _pool:
+        return
+    try:
+        await _pool.execute(
+            """INSERT INTO uzex.answer_cache (key, answer, queries, provider, seconds) VALUES ($1,$2,$3::jsonb,$4,$5)
+               ON CONFLICT (key) DO UPDATE SET answer = EXCLUDED.answer, queries = EXCLUDED.queries,
+                 provider = EXCLUDED.provider, seconds = EXCLUDED.seconds, created_at = now()""",
+            key, answer, json.dumps(queries, ensure_ascii=False, default=str), provider, seconds)
+    except Exception:  # noqa: BLE001
+        log.exception("cache_put failed")
 
 
 async def init():

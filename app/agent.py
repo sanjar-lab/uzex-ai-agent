@@ -20,7 +20,16 @@ You are the UZEX deals analyst: an AI agent that answers questions about the com
 GOLDEN RULES (violating them disqualifies the team):
 1. Every number, company, INN, product, code, date in your answer MUST come from tool results in THIS conversation.
    Never use outside knowledge, never estimate, never round away precision that matters.
+0. NOT A DATA QUESTION? Greetings, questions about you / what you can do, thanks, or topics outside the exchange
+   deals registry (weather, news, politics, general knowledge, coding, advice, prices on other markets …):
+   do NOT call any tool. Reply immediately, starting with the marker [CHAT], in 1–3 short sentences.
+   For off-topic questions say that you only answer questions about the UZEX deals registry (2022–2026) and that
+   this information is not in the data; suggest an example question. Never invent facts for such questions.
 2. Before answering any factual question call run_sql (and find_entity for names). Check your SQL result makes sense.
+   BE FAST: use as few tool calls as possible. Typically: find_entity only if a company/product/broker NAME must be
+   resolved, then ONE SQL query that computes everything for the answer at once (main figure, the
+   excluding-cancelled figure via FILTER, and the top-3 for rankings — use CTEs). Do not re-run queries to
+   "double-check" unless the result looks wrong. Do not call find_entity for things like regions, years, statuses.
    Every extra claim (e.g. "excluding cancelled deals the figure is …", "this company has no cancelled deals",
    shares, differences, sums of rows) needs its own query — compute it in SQL, never in your head.
    An automatic checker compares every number in your answer with the tool results and rejects unverified ones.
@@ -232,11 +241,22 @@ NO_ANSWER = {
 }
 
 
+def _jsonable(v):
+    if v is None or isinstance(v, (bool, int, float, str)):
+        return v
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return str(v)
+
+
 async def _exec_tool(name: str, args: dict, queries: list[dict]) -> str:
     if name == "run_sql":
         sql = args.get("sql", "")
         res = await asyncio.to_thread(db.run_sql, sql)
-        queries.append({"tool": "sql", "sql": sql, "rows": len(res.get("rows", [])), "error": res.get("error")})
+        queries.append({"tool": "sql", "sql": sql, "rows": len(res.get("rows", [])), "error": res.get("error"),
+                        "columns": res.get("columns", []),
+                        "data": [[_jsonable(v) for v in r] for r in res.get("rows", [])[:25]]})
         return "ERROR: " + res["error"] if "error" in res else res["text"]
     if name == "find_entity":
         res = await asyncio.to_thread(db.find_entity, args.get("kind", ""), args.get("query", ""))
@@ -246,10 +266,108 @@ async def _exec_tool(name: str, args: dict, queries: list[dict]) -> str:
     return f"ERROR: unknown tool {name}"
 
 
+# ---------------------------------------------------------------- small talk: instant answers, no DB / LLM
+_ST_PATTERNS = {
+    "hello": r"^(salom|assalomu? ?alaykum|assalom|hayrli (kun|tong|kech)|привет|здравствуй(те)?|добрый (день|вечер|утро)|"
+             r"салом|ассалому? ?алайкум|hello|hi|hey)\b",
+    "who": r"(sen|siz) kim(san|siz)|kimsan|kimsiz|nima qila olasan|nima qila olasiz|nimalar(ni)? bilasan|qanday ishlaysan|"
+           r"кто ты|кто вы|что ты (умеешь|можешь)|что вы (умеете|можете)|как ты работаешь|ты кто|сен кимсан|сиз кимсиз|"
+           r"who are you|what can you do|nima bilan yordam",
+    "thanks": r"^(rahmat|raxmat|katta rahmat|tashakkur|спасибо|благодарю|рахмат|thanks|thank you)\b",
+    "bye": r"^(xayr|ko'?rishguncha|пока|до свидания|хайр|bye|goodbye)\b",
+}
+_ST_ANSWERS = {
+    "hello": {
+        "uz": "Assalomu alaykum! 👋 Men UZEX birja bitimlari reyestri boʻyicha AI-agentman. Savolingizni yozing — "
+              "masalan: «2025-yilda eng koʻp bitim tuzgan sotuvchi kim?»",
+        "uz_cyr": "Ассалому алайкум! 👋 Мен UZEX биржа битимлари реестри бўйича AI-агентман. Саволингизни ёзинг — "
+                  "масалан: «2025 йилда энг кўп битим тузган сотувчи ким?»",
+        "ru": "Здравствуйте! 👋 Я AI-агент по реестру сделок биржи UZEX. Задайте вопрос — например: "
+              "«Кто из продавцов заключил больше всего сделок в 2025 году?»",
+    },
+    "who": {
+        "uz": "Men — UZEX AI-agent. UZEX birja bitimlari reyestri (500 000 ta bitim, 2022–2026, shartnomalar, kompaniyalar, "
+              "brokerlar, dollar kursi) boʻyicha savollarga faqat maʼlumotlar asosida javob beraman.\n\n"
+              "Nimalarni soʻrash mumkin: reytinglar (eng faol sotuvchi, xaridor, broker), summa va hajmlar, oʻrtacha narxlar, "
+              "kompaniya (nomi yoki STIR), shartnoma va bitim raqami boʻyicha maʼlumot, eksport, bitim holatlari.\n"
+              "Har javob ostida u qaysi SQL soʻrov asosida olingani koʻrsatiladi. Maʼlumotda javob boʻlmasa — ochiq aytaman.",
+        "uz_cyr": "Мен — UZEX AI-агент. UZEX биржа битимлари реестри (500 000 та битим, 2022–2026) бўйича саволларга фақат "
+                  "маълумотлар асосида жавоб бераман: рейтинглар, сумма ва ҳажмлар, ўртача нархлар, компания (номи ёки СТИР), "
+                  "шартнома ва битим рақами бўйича. Маълумотда жавоб бўлмаса — очиқ айтаман.",
+        "ru": "Я — UZEX AI-агент. Отвечаю на вопросы о реестре сделок биржи UZEX (500 000 сделок за 2022–2026, контракты, "
+              "компании, брокеры, курс доллара) строго по данным.\n\n"
+              "Можно спросить: рейтинги (самые активные продавцы, покупатели, брокеры), суммы и объёмы, средние цены, "
+              "данные по компании (название или ИНН), номеру контракта или сделки, экспорт, статусы сделок.\n"
+              "Под каждым ответом видно, на каком SQL-запросе он основан. Если в данных ответа нет — честно скажу.",
+    },
+    "thanks": {"uz": "Arzimaydi! 😊 Yana savollaringiz boʻlsa, bemalol yozing.",
+               "uz_cyr": "Арзимайди! 😊 Яна саволларингиз бўлса, бемалол ёзинг.",
+               "ru": "Пожалуйста! 😊 Если появятся ещё вопросы — пишите."},
+    "bye": {"uz": "Xayr! Kerak boʻlsa, yana yozing. 👋", "uz_cyr": "Хайр! Керак бўлса, яна ёзинг. 👋",
+            "ru": "До свидания! Если понадобится — пишите. 👋"},
+}
+# facts the model may state without a query (used to check [CHAT] answers)
+FACTS = "500 000 500000 2022 2026 6 616 6616 14 392 14392 120 03.01.2022 30.10.2026 2 3 5 10 20 90"
+
+
+def small_talk(question: str, lang: str) -> str | None:
+    q = question.lower().strip().replace("ʻ", "'").replace("‘", "'").replace("’", "'")
+    if len(q) > 70 or re.search(r"\d", q):
+        return None
+    for kind, pat in _ST_PATTERNS.items():
+        if re.search(pat, q):
+            # a greeting followed by a real question -> not small talk
+            if kind in ("hello", "thanks", "bye") and len(q.split()) > 4:
+                return None
+            return _ST_ANSWERS[kind][lang]
+    return None
+
+
+# ---------------------------------------------------------------- answer cache (data is static -> answers are stable)
+CACHE_VERSION = "v2"
+_cache: dict[str, Result] = {}
+
+
+def cache_key(question: str) -> str:
+    q = question.lower().replace("ʻ", "'").replace("‘", "'").replace("’", "'").replace("ё", "е")
+    q = re.sub(r"[\s?!.,;:«»\"]+", " ", q).strip()
+    return CACHE_VERSION + ":" + q
+
+
+def _cacheable(question: str, history) -> bool:
+    if not history:
+        return True
+    # with context, only long self-contained questions are safe to cache
+    return len(question) >= 35 and not re.match(r"^(va |а |и |а в |what about|ну а)", question.lower())
+
+
 async def ask(question: str, history: list[tuple[str, str]] | None = None) -> Result:
     t0 = time.time()
-    deadline = t0 + ANSWER_DEADLINE
     lang = detect_lang(question)
+    st = small_talk(question, lang)
+    if st:
+        return Result(st, [], "instant", time.time() - t0)
+    key = cache_key(question) if _cacheable(question, history) else None
+    if key:
+        hit = _cache.get(key)
+        if not hit:
+            from . import store  # local import: store is optional
+            d = await store.cache_get(key)
+            if d:
+                hit = Result(d["answer"], d["queries"], d["provider"], d["seconds"])
+                _cache[key] = hit
+        if hit:
+            return Result(hit.answer, hit.queries, "cache · " + hit.provider.split(" · ")[0], time.time() - t0)
+    res = await _ask_llm(question, history, lang, t0)
+    if key and res.ok and res.queries and not res.unverified:
+        _cache[key] = res
+        from . import store
+        asyncio.create_task(store.cache_put(key, res.answer, res.queries, res.provider, res.seconds))
+    return res
+
+
+async def _ask_llm(question: str, history, lang: str, t0: float) -> Result:
+    deadline = t0 + ANSWER_DEADLINE
     messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
     for q, a in (history or [])[-2:]:
         messages += [{"role": "user", "content": q}, {"role": "assistant", "content": a}]
@@ -276,11 +394,21 @@ async def ask(question: str, history: list[tuple[str, str]] | None = None) -> Re
         calls = msg.get("tool_calls") or []
         if not calls:
             text = (msg.get("content") or "").strip()
+            # Non-data answer (greeting, about the bot, off-topic): allowed without tools, but it may not contain
+            # numbers other than the general facts about the dataset.
+            if text.startswith("[CHAT]"):
+                text = text[len("[CHAT]"):].strip()
+                if not ungrounded_numbers(text, [FACTS, question]) or nudged or last:
+                    return Result(_clean(text), [], provider_name, time.time() - t0)
+                nudged = True
+                messages.append({"role": "user", "content": "Your [CHAT] answer contains specific numbers — that is a "
+                                 "data question. Use the tools to get them from the data, then answer."})
+                continue
             # Guard: a factual answer without any successful data lookup is not allowed.
             if not any(not q.get("error") for q in queries) and not nudged and not last:
                 nudged = True
                 messages.append({"role": "user", "content": "You have not checked the data yet. Use the tools to verify "
-                                 "before answering (unless this is a greeting / not a data question)."})
+                                 "before answering. (If this is not a data question, reply starting with [CHAT].)"})
                 continue
             # Guard 2: every number in the answer must be present in tool results (or the question).
             bad = ungrounded_numbers(text, [m.get("content") or "" for m in messages if m.get("role") == "tool"]

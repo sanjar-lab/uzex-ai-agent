@@ -50,6 +50,21 @@ async def keep_awake():
                 log.warning("keep-awake ping failed: %s", e)
 
 
+async def warm_cache():
+    """Answer the example questions once (persisted in Postgres) so example buttons reply instantly."""
+    await asyncio.sleep(30)
+    for lang in tg.T:
+        for _, q in tg.T[lang]["examples"]:
+            try:
+                if await store.cache_get(agent.cache_key(q)):
+                    continue
+                r = await agent.ask(q)
+                log.info("warm-cache: %s -> ok=%s %.1fs", q[:60], r.ok, r.seconds)
+            except Exception:  # noqa: BLE001
+                log.exception("warm-cache failed")
+            await asyncio.sleep(3)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global BOT
@@ -58,6 +73,7 @@ async def lifespan(_: FastAPI):
     log.info("LLM providers: %s", llm.configured())
     await store.init()
     pinger = asyncio.create_task(keep_awake()) if PUBLIC_URL else None
+    warmer = asyncio.create_task(warm_cache()) if PUBLIC_URL and store.backend() == "postgres" else None
 
     if TOKEN:
         BOT = tg.build_bot(TOKEN, PUBLIC_URL)
@@ -79,8 +95,9 @@ async def lifespan(_: FastAPI):
 
     yield
 
-    if pinger:
-        pinger.cancel()
+    for task in (pinger, warmer):
+        if task:
+            task.cancel()
     await store.close()
     if BOT:
         if BOT.updater and BOT.updater.running:
@@ -109,6 +126,12 @@ async def index():
 async def logo():
     return FileResponse(os.path.join(ROOT, "assets", "logo.png"), media_type="image/png",
                         headers={"Cache-Control": "public, max-age=86400"})
+
+
+@api.get("/api/stats")
+async def api_stats():
+    """Registry overview for the dashboard (cached)."""
+    return await asyncio.to_thread(db.stats)
 
 
 @api.get("/health")

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<title>UZEX AI-agent — yechim tavsifi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:11mm 12mm 12mm}
+:root{--ink:#0f172a;--ink2:#334155;--mut:#64748b;--line:#e2e8f0;--blue:#1d4ed8;--sky:#0ea5e9;--teal:#14b8a6;--soft:#f1f6fd;
+  --grad:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 55%,#14b8a6 100%)}
+*{box-sizing:border-box}
+body{margin:0;font:9.7pt/1.45 Inter,Segoe UI,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+h1{font-size:25pt;line-height:1.1;margin:0;letter-spacing:-.02em}
+h2{font-size:13pt;margin:15px 0 7px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;break-after:avoid}
+h2 .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--grad);color:#fff;font-size:10.5pt}
+h3{font-size:11pt;margin:12px 0 4px}
+p{margin:0 0 7px}
+.cover{border-radius:18px;padding:22px 24px;background:linear-gradient(135deg,#eff6ff 0%,#ecfeff 100%);border:1px solid #dbeafe;display:flex;gap:18px;align-items:center}
+.cover img{width:92px;height:92px;border-radius:22px;box-shadow:0 8px 24px rgba(14,165,233,.25)}
+.cover .sub{color:var(--ink2);font-size:11.5pt;margin-top:6px}
+.grad{color:#0b7fd1}
+pre{break-inside:avoid}
+.webshot{width:80%;margin:0 auto}
+.links{margin-top:9px;display:flex;flex-wrap:wrap;gap:6px}
+.links span{background:#fff;border:1px solid #dbeafe;border-radius:8px;padding:3px 9px;font-size:9pt;font-weight:600;color:var(--blue)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 4px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff}
+.kpi b{display:block;font-size:14.5pt;letter-spacing:-.02em}
+.kpi span{color:var(--mut);font-size:8.6pt}
+.flow{display:flex;align-items:stretch;gap:6px;margin:10px 0}
+.flow .s{flex:1;border:1px solid #dbeafe;background:var(--soft);border-radius:12px;padding:9px 10px;font-size:8.8pt}
+.flow .s b{display:block;font-size:9.6pt;margin-bottom:2px}
+.flow .ar{display:grid;place-items:center;color:var(--sky);font-weight:800}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:#fff;break-inside:avoid}
+.box.hl{background:linear-gradient(135deg,#eff6ff,#f0fdfa);border-color:#bfdbfe}
+.box h3{margin-top:0}
+ul{margin:4px 0 6px;padding-left:17px}li{margin:2px 0}
+table{width:100%;border-collapse:collapse;font-size:8.6pt;margin:6px 0}
+th{background:#f1f5fb;text-align:left;font-weight:700;color:var(--ink2)}
+th,td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+tr{break-inside:avoid}
+.ok{color:#059669;font-weight:700}
+code{font:8.6pt "JetBrains Mono",Consolas,monospace;background:#f1f5fb;padding:1px 5px;border-radius:5px}
+pre{font:8.3pt/1.45 "JetBrains Mono",Consolas,monospace;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:10px 12px;white-space:pre-wrap;margin:6px 0}
+.shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(30,64,175,.08);break-inside:avoid}
+.shot img{display:block;width:100%}
+.cap{color:var(--mut);font-size:8.6pt;margin:5px 2px 10px}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+.tg .shot{background:#0e1621}
+.chain{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.chain span{border-radius:9px;padding:5px 10px;font-weight:600;font-size:9pt;border:1px solid var(--line);background:#fff}
+.chain span.p{background:var(--grad);color:#fff;border:0}
+.chain i{color:var(--mut);font-style:normal}
+.pb{break-before:page}
+.foot{margin-top:16px;padding-top:9px;border-top:1px solid var(--line);color:var(--mut);font-size:8.6pt;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <img src="../assets/logo_1024.png" alt="">
+  <div>
+    <div style="font-size:9.5pt;font-weight:700;color:var(--blue);letter-spacing:.04em">UZEX AI HACKATHON 2026 · SARALASH BOSQICHI</div>
+    <h1>UZEX AI-agent — <span class="grad">yechim tavsifi</span></h1>
+    <div class="sub">Birja bitimlari haqidagi savollarga oʻzbek va rus tilida, <b>faqat maʼlumotlar asosida</b> javob beruvchi AI-agent</div>
+    <div class="links"><span>Telegram: @XG_tech_bot</span><span>Veb: uzex-ai-agent.onrender.com</span></div>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><b>500 000</b><span>bitim, 2022–2026</span></div>
+  <div class="kpi"><b>22 / 22</b><span>test savoli toʻgʻri</span></div>
+  <div class="kpi"><b>3–20 s</b><span>javob vaqti</span></div>
+  <div class="kpi"><b>UZ · RU</b><span>lotin, kirill, rus</span></div>
+  <div class="kpi"><b>0</b><span>oʻylab topilgan raqam</span></div>
+</div>
+
+<h2><span class="n">1</span>Gʻoya</h2>
+<p>Agent javobni «oʻylab» topmaydi. U savolni maʼlumotlar bazasiga <b>SQL-soʻrovga</b> aylantiradi, soʻrovni bajaradi va <b>faqat olingan natija asosida</b> javob yozadi. Javobdagi har bir raqam kod darajasida avtomatik tekshiriladi, javob asosi (SQL soʻrovlar) esa foydalanuvchiga koʻrsatiladi. Maʼlumotda javob boʻlmasa, agent buni ochiq aytadi.</p>
+
+<div class="flow">
+  <div class="s"><b>💬 Savol</b>UZ (lotin/kirill) yoki RU, erkin shaklda</div><div class="ar">→</div>
+  <div class="s"><b>🔍 Nomlarni topish</b>kompaniya, tovar, broker: kirill ⇄ lotin, fuzzy</div><div class="ar">→</div>
+  <div class="s"><b>🗄️ SQL-soʻrov</b>DuckDB, 500 000 bitim, aniq hisob</div><div class="ar">→</div>
+  <div class="s"><b>✅ Tekshiruv</b>har bir raqam SQL natijasi bilan solishtiriladi</div><div class="ar">→</div>
+  <div class="s"><b>📊 Javob + asos</b>aniq raqam, nom, STIR + SQL + grafik</div>
+</div>
+
+<h2><span class="n">2</span>Maʼlumotlar qanday ishlatiladi: SQL, RAG emas</h2>
+<div class="cols">
+  <div class="box hl">
+    <h3>Text-to-SQL (biz tanlagan usul)</h3>
+    <ul>
+      <li>CSV fayllar bir marta <b>DuckDB</b> bazasiga yuklanadi (38 MB, ~6 s). Raqamlar va sanalar toʻgʻri turlarga oʻtkaziladi.</li>
+      <li>README dagi formulalar oldindan hisoblanadi: hajm = miqdor × lot, birlik narxi, valyuta, bitim kunidagi kurs boʻyicha soʻmdagi va dollardagi summa.</li>
+      <li>LLM har bir savolga SQL yozadi. Baza <b>yigʻindi, oʻrtacha, reyting, filtr</b> amallarini 500 000 qator ustida <b>aniq</b> bajaradi.</li>
+      <li>Natija — aniq raqamlar. LLM ularni faqat matnga aylantiradi.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Nega RAG emas?</h3>
+    <ul>
+      <li>RAG (vektor qidiruv) bir nechta oʻxshash matn boʻlagini topadi, lekin <b>500 000 bitimni qoʻsha olmaydi</b>: «2024-yildagi jami summa» kabi savollarga aniq javob bera olmaydi.</li>
+      <li>Savollar asosan agregatsiya, reyting va filtrga oid, bu SQL ning aynan vazifasi.</li>
+      <li>SQL natijasini <b>tekshirish va koʻrsatish</b> mumkin: komissiya javob nimaga asoslanganini koʻradi.</li>
+      <li>Fuzzy-qidiruv faqat <b>nomlarni</b> topish uchun ishlatiladi (STIR, broker kodi, TN VED kodiga bogʻlash).</li>
+    </ul>
+  </div>
+</div>
+<pre>-- Masalan (soddalashtirilgan): «Qaysi viloyatda eksport bitimlari eng koʻp?» savoli uchun soʻrov
+SELECT region, count(*) AS n, sum(amount_usd) AS usd
+FROM deals WHERE contract_type = 'Экспортный'
+GROUP BY region ORDER BY n DESC LIMIT 10;      → Surxondaryo viloyati: 2 110 bitim, 497 215 428,57 USD</pre>
+
+<h2><span class="n">3</span>Arxitektura</h2>
+<div class="cols">
+  <div class="box">
+    <h3>Komponentlar</h3>
+    <ul>
+      <li><b>Maʼlumotlar qatlami:</b> DuckDB (faqat oʻqish), bitimlar jadvali sotuvchi, xaridor, broker, tovar va valyuta bilan boyitilgan.</li>
+      <li><b>Nomlarni moslashtirish:</b> transliteratsiya + Jaro-Winkler. <code>Harayom Kimyo</code> → <code>"ҲАРАЙЎМ КИМЁ" МЧЖ</code>; <code>Хлопок сырец</code> / <code>Хлопок-сырец</code> / <code>ХЛОПОК-СЫРЕЦ</code> birlashtiriladi.</li>
+      <li><b>Agent:</b> tool calling (<code>find_entity</code>, <code>run_sql</code>), 10 tagacha qadam, 80 s limit.</li>
+      <li><b>Interfeys:</b> Telegram-bot (menyu tugmalari, bir bosishli namuna savollar) va veb-ilova (dashboard, grafiklar, chat).</li>
+      <li><b>Xotira va jurnal:</b> PostgreSQL (Supabase): davomli savollar uchun oxirgi 2 ta savol-javob va barcha savollar jurnali.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>LLM zanjiri (avtomatik zaxira)</h3>
+    <div class="chain"><span class="p">Claude Sonnet 5.5</span><i>→</i><span>Gemini 3.5 Flash</span><i>→</i><span>Gemini 3 Flash</span><i>→</i><span>Flash-Lite</span><i>→</i><span>boshqa kalitlar</span><i>→</i><span>Groq gpt-oss-120b</span></div>
+    <p style="font-size:9.2pt;color:var(--ink2)">Limit tugasa yoki xato boʻlsa, soʻrov oʻsha zahoti keyingi modelga oʻtadi; foydalanuvchi buni sezmaydi. Barcha modellar bitta OpenAI-compatible tool-calling sikli bilan ishlaydi.</p>
+    <h3>Doimiy ishlash</h3>
+    <p style="font-size:9.2pt;color:var(--ink2)">Render (bulut) + har 10 daqiqada self-ping + UptimeRobot monitoring. Oʻrnatish va roʻyxatdan oʻtish talab qilinmaydi.</p>
+  </div>
+</div>
+
+<h2><span class="n">4</span>Javoblar qanday tekshiriladi (gallyutsinatsiyaga qarshi)</h2>
+<div class="cols">
+  <div class="box">
+    <ul>
+      <li><b>Maʼlumotsiz javob yoʻq:</b> birorta muvaffaqiyatli SQL soʻrovsiz berilgan javob rad etiladi.</li>
+      <li><b>Raqamlarni avtomatik tekshirish:</b> javobdagi har bir raqam SQL natijalari bilan solishtiriladi (yaxlitlash, %, kg↔t hisobga olinadi). Tasdiqlanmagan raqam boʻlsa, javob yuborilmaydi va model uni tekshirishga majburlanadi.</li>
+      <li><b>«Maʼlumotda javob yoʻq»:</b> boshqa yil, bazada yoʻq tovar yoki maydon soʻralsa, agent buni ochiq aytadi.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <ul>
+      <li><b>Biznes-qoidalar:</b> turli valyutadagi summalar va turli oʻlchov birligidagi hajmlar qoʻshilmaydi; bekor qilingan bitimlar alohida koʻrsatiladi; nomlar bazadagidek aynan yoziladi.</li>
+      <li><b>Xavfsizlik:</b> faqat SELECT, 20 s timeout, 50 qator limiti.</li>
+      <li><b>Shaffoflik:</b> har javob ostida SQL soʻrovlar, qatorlar soni, model va vaqt koʻrsatiladi.</li>
+    </ul>
+  </div>
+</div>
+
+<h2><span class="n">5</span>Sinov natijalari</h2>
+<p>22 ta savol (rus, oʻzbek lotin va kirill) qoʻlda yozilgan SQL natijalari bilan solishtirildi. Hammasi toʻgʻri.</p>
+<table>
+<tr><th>Savol</th><th>Toʻgʻri qiymat (SQL)</th><th></th></tr>
+<tr><td>2025-yilda eng koʻp bitim tuzgan sotuvchi kim?</td><td>"Kinen Energo" MChJ — 2 877 bitim</td><td class="ok">✓</td></tr>
+<tr><td>Какая общая сумма сделок по карбамиду в 2024 году?</td><td>783 791 022 615 soʻm (3 ta yozilish varianti)</td><td class="ok">✓</td></tr>
+<tr><td>Qaysi viloyatda eksport bitimlari eng koʻp?</td><td>Surxondaryo — 2 110 bitim, 497 215 428,57 USD</td><td class="ok">✓</td></tr>
+<tr><td>2025 йилда портландцементнинг ўртача нархи қанча?</td><td>951 319,67 сўм/тонна (javob kirillda)</td><td class="ok">✓</td></tr>
+<tr><td>Harayom Kimyo sotuvchi sifatida nechta bitim tuzgan?</td><td>"ҲАРАЙЎМ КИМЁ" МЧЖ — 10 608 (lotin → kirill)</td><td class="ok">✓</td></tr>
+<tr><td>Кто купил больше всего хлопка-сырца в 2025 году?</td><td>"Zoket Invest" OK — 103 545 907 kg</td><td class="ok">✓</td></tr>
+<tr><td>2026-yilda nechta bitim bekor qilingan?</td><td>6 266 (02.01–26.10.2026)</td><td class="ok">✓</td></tr>
+<tr><td>Сколько контрактов зарегистрировано в 2023 году?</td><td>1 062 (shartnomalar jadvalidan)</td><td class="ok">✓</td></tr>
+<tr><td>Средний рост цены от стартовой по бензину, 2026?</td><td>3,21 % (4 298 bitim)</td><td class="ok">✓</td></tr>
+<tr><td><i>Tuzoq:</i> telefon raqami · 2021-yil · oltin</td><td>«Maʼlumotlarda javob yoʻq» + nima borligi</td><td class="ok">✓</td></tr>
+</table>
+<p style="font-size:9pt;color:var(--mut)">Sinovda topilib tuzatilgan 6 ta kamchilik: javob tili, nomlarni transliteratsiya qilish, shartnomalar sonini notoʻgʻri jadvaldan olish, tekshirilmagan daʼvo, bekor qilingan bitimlarni jimgina chiqarib tashlash, tovar variantini tushirib qoldirish. Toʻliq roʻyxat: <code>tests/RESULTS.md</code>.</p>
+
+<h2><span class="n">6</span>Tezlik va ishonchlilik</h2>
+<table>
+<tr><th>Savol turi</th><th>Qanday ishlanadi</th><th>Vaqt</th></tr>
+<tr><td>Salomlashish, «Sen kimsan?», «Rahmat»</td><td>Tayyor javob — bazaga ham, AI ga ham murojaat qilinmaydi</td><td><b>0 s</b></td></tr>
+<tr><td>Mavzudan tashqari (ob-havo, siyosat…)</td><td>SQL ishlatilmaydi; «bu maʼlumot reyestrda yoʻq» deb ochiq aytiladi</td><td>~2 s</td></tr>
+<tr><td>Maʼlumot savoli</td><td>Odatda <b>bitta</b> SQL soʻrov: asosiy raqam, bekor qilinganlarsiz raqam va top-3 bir yoʻla hisoblanadi</td><td>3–8 s</td></tr>
+<tr><td>Takroriy savol / namuna tugmasi</td><td>Kesh (maʼlumotlar oʻzgarmaydi) — PostgreSQL da saqlanadi, server qayta ishga tushsa ham saqlanib qoladi</td><td><b>0 s</b></td></tr>
+</table>
+<p style="font-size:9.2pt;color:var(--ink2)">Bitta modelda limit tugasa yoki xato boʻlsa, soʻrov avtomatik ravishda keyingi modelga oʻtadi (Claude → Gemini → Groq). Javobga ichki limit — 80 s (komissiya talabi — 90 s).</p>
+
+<h2><span class="n">7</span>Qanday foydalaniladi</h2>
+<div class="cols">
+  <div class="box">
+    <h3>Telegram-bot: @XG_tech_bot</h3>
+    <ul>
+      <li><code>/start</code> — salomlashish va namuna savollar (bir bosishda javob)</li>
+      <li>Pastki menyu: 💡 Namuna savollar · ℹ️ Bot haqida · 🆕 Yangi suhbat · 🌐 Veb-versiya</li>
+      <li>Savolni oʻzbek (lotin/kirill) yoki rus tilida erkin yozing</li>
+      <li>Javob ostidagi 🔎 blokni bosing — SQL asos ochiladi</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Veb-ilova: uzex-ai-agent.onrender.com</h3>
+    <ul>
+      <li>Roʻyxatdan oʻtishsiz, brauzerda ishlaydi; UZ / RU interfeys</li>
+      <li>Reyestr boʻyicha KPI va grafiklar (yillar, oylar, kategoriyalar, viloyatlar)</li>
+      <li>AI-chat: javob + avtomatik grafik + «Javob asosi» (SQL)</li>
+      <li>REST API: <code>POST /api/ask</code>, <code>GET /api/stats</code></li>
+    </ul>
+  </div>
+</div>
+
+<h2 class="pb"><span class="n">8</span>Interfeys</h2>
+<h3>Veb-ilova: dashboard, grafiklar va AI-chat</h3>
+<div class="shot webshot"><img src="screenshots/web_dashboard.png" alt=""></div>
+<div class="cap">KPI kartalar, yillik va oylik dinamika, kategoriyalar, viloyatlar. Javob ostida avtomatik grafik, model, vaqt va «SQL bilan tasdiqlangan» belgisi.</div>
+
+<h3>Telegram-bot @XG_tech_bot</h3>
+<div class="tg">
+  <div><div class="shot"><img src="screenshots/tg_export_region.png" alt=""></div><div class="cap">Eksport: yetakchi viloyat va keyingi oʻrinlar</div></div>
+  <div><div class="shot"><img src="screenshots/tg_top_seller.png" alt=""></div><div class="cap">2025-yilning eng faol sotuvchisi</div></div>
+  <div><div class="shot"><img src="screenshots/tg_cancelled.png" alt=""></div><div class="cap">2026-yilda bekor qilingan bitimlar</div></div>
+</div>
+<p style="font-size:9pt;color:var(--ink2)">Har javob ostidagi 🔎 «Asos» blokida u qaysi SQL soʻrovlar asosida olingani koʻrsatiladi. Skrinshotlardagi barcha raqamlar qoʻlda SQL bilan tekshirildi.</p>
+
+<h2><span class="n">9</span>Texnologiyalar</h2>
+<p>Python 3.11 · DuckDB · FastAPI + Uvicorn · python-telegram-bot 21 (webhook) · Claude Sonnet 5.5 / Google Gemini / Groq (OpenAI-compatible tool calling) · PostgreSQL (Supabase) · Chart.js · Render (hosting) + UptimeRobot.</p>
+
+<div class="foot"><span>UZEX AI-agent · UZEX AI Hackathon 2026</span><span>t.me/XG_tech_bot · uzex-ai-agent.onrender.com</span></div>
+</body>
+</html>

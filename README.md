@@ -18,6 +18,10 @@
 
 ---
 
+<p align="center"><img src="docs/screenshots/web_dashboard.png" width="900" alt="Web app"></p>
+
+**Approach: Text-to-SQL, not RAG.** The registry is loaded into DuckDB; the LLM writes SQL, the database computes exact aggregates over all 500 000 deals, and the LLM only phrases the result. Vector search (RAG) cannot sum or rank half a million rows; fuzzy search is used only to resolve names. Full write-up: [docs/UZEX_AI_agent_yechim.pdf](docs/UZEX_AI_agent_yechim.pdf).
+
 ## Highlights
 
 | | |
@@ -27,7 +31,7 @@
 | **Automatic number check** | Each number in the final answer is matched against the query results; unverified numbers are sent back to the model before the user sees anything. |
 | **Transparent** | Under every answer: the SQL queries it is based on, row counts and response time. |
 | **Bilingual** | Understands RU / UZ-Latin / UZ-Cyrillic, answers in the language and script of the question. Matches names across scripts (`"ҲАРАЙЎМ КИМЁ" МЧЖ` ⇄ `Harayom Kimyo`). |
-| **Fast & always on** | Typical answer in 3–20 s (hard limit 80 s); the whole registry is a 38 MB embedded DuckDB file; keep-alive pings on free hosting. |
+| **Fast & always on** | Small talk answered instantly without the LLM; off-topic questions answered without touching the DB; data questions usually need one SQL query (3–8 s); repeated questions served from a persistent cache (0 s). Keep-alive pings on free hosting. |
 | **Resilient** | Automatic fallback across LLM providers and keys: Claude → Gemini (several keys / models) → Groq. |
 | **No install, no sign-up** | Telegram bot with menu buttons and one-tap example questions, plus a web chat. |
 

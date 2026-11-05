@@ -78,6 +78,45 @@ def run_sql(sql: str) -> dict:
     return {"columns": cols, "rows": rows, "text": text}
 
 
+_stats_cache: dict | None = None
+
+
+def stats() -> dict:
+    """Dashboard numbers for the web app (computed once, cached)."""
+    global _stats_cache
+    if _stats_cache:
+        return _stats_cache
+    c = con().cursor()
+    try:
+        kpi = c.execute("""
+            SELECT count(*), sum(amount_uzs), sum(amount_usd),
+                   count(*) FILTER (WHERE contract_type='Экспортный'),
+                   count(*) FILTER (WHERE status IN ('Исполнен','Исполнен(Частично)')),
+                   min(deal_date), max(deal_date)
+            FROM deals""").fetchone()
+        years = c.execute("SELECT deal_year, count(*), sum(amount_uzs) FROM deals GROUP BY 1 ORDER BY 1").fetchall()
+        months = c.execute("""SELECT strftime(date_trunc('month', deal_date), '%Y-%m'), count(*), sum(amount_uzs)
+                              FROM deals GROUP BY 1 ORDER BY 1""").fetchall()
+        cats = c.execute("""SELECT product_category, count(*), sum(amount_uzs) FROM deals
+                            GROUP BY 1 ORDER BY 3 DESC""").fetchall()
+        regions = c.execute("""SELECT region, count(*), sum(amount_uzs) FROM deals
+                               GROUP BY 1 ORDER BY 2 DESC LIMIT 8""").fetchall()
+        status = c.execute("SELECT status, count(*) FROM deals GROUP BY 1 ORDER BY 2 DESC").fetchall()
+        n = {t: c.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in ("contracts", "participants", "brokers")}
+    finally:
+        c.close()
+    _stats_cache = {
+        "deals": kpi[0], "turnover_uzs": kpi[1], "turnover_usd": kpi[2], "export_deals": kpi[3],
+        "executed_deals": kpi[4], "date_from": kpi[5].isoformat(), "date_to": kpi[6].isoformat(), **n,
+        "by_year": [{"year": y, "deals": d, "uzs": s} for y, d, s in years],
+        "by_month": [{"month": m, "deals": d, "uzs": s} for m, d, s in months],
+        "by_category": [{"name": k, "deals": d, "uzs": s} for k, d, s in cats],
+        "by_region": [{"name": k, "deals": d, "uzs": s} for k, d, s in regions],
+        "by_status": [{"name": k, "deals": d} for k, d in status],
+    }
+    return _stats_cache
+
+
 def find_entity(kind: str, query: str, limit: int = 12) -> dict:
     """Fuzzy lookup of companies / brokers / products across Cyrillic & Latin spellings."""
     qn = norm(query)
