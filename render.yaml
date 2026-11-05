@@ -19,5 +19,9 @@ services:
         value: gemini-3.5-flash,gemini-3-flash-preview
       - key: GROQ_MODEL
         value: openai/gpt-oss-120b
+      - key: LLM_ROUND_ROBIN
+        value: "0"
+      - key: DUCKDB_MEMORY
+        value: 250MB
       - key: WEBHOOK_SECRET
         generateValue: true
