@@ -22,7 +22,7 @@ from telegram import Update  # noqa: E402
 from telegram.constants import ChatAction, ParseMode  # noqa: E402
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters  # noqa: E402
 
-from . import agent, db, llm  # noqa: E402
+from . import agent, db, llm, store  # noqa: E402
 from .web import PAGE  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -85,7 +85,7 @@ def basis_block(res: agent.Result, lang: str, limit: int = 2500) -> str:
 
 # ---------------- Telegram ----------------
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    HISTORY.pop(update.effective_chat.id, None)
+    await store.reset(update.effective_chat.id)
     await update.effective_message.reply_text(START_TEXT, parse_mode=ParseMode.HTML)
 
 
@@ -94,8 +94,8 @@ async def cmd_about(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_new(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    HISTORY.pop(update.effective_chat.id, None)
-    await update.effective_message.reply_text("🆕 OK")
+    await store.reset(update.effective_chat.id)
+    await update.effective_message.reply_text("🆕 Yangi suhbat / Новый диалог")
 
 
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -117,14 +117,15 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     t = asyncio.create_task(typing())
     try:
-        res = await agent.ask(q, list(HISTORY[chat_id]))
-    except Exception as e:  # noqa: BLE001
+        res = await agent.ask(q, await store.history(chat_id))
+    except Exception:  # noqa: BLE001
         log.exception("agent failed")
         res = agent.Result(agent.NO_ANSWER[lang], ok=False)
     finally:
         t.cancel()
-    if res.ok:
-        HISTORY[chat_id].append((q, res.answer))
+    u = update.effective_user
+    asyncio.create_task(store.save(chat_id, q, res.answer, res.ok, res.seconds, res.provider, res.queries, "tg",
+                                   (u.username or u.full_name) if u else ""))
     text = html.escape(res.answer)[:3300] + basis_block(res, lang)
     log.info("Q[%s]: %s | %.1fs %s | A: %s", chat_id, q[:200], res.seconds, res.provider, res.answer[:200].replace("\n", " "))
     try:
@@ -149,12 +150,27 @@ def build_bot() -> Application | None:
 BOT: Application | None = None
 
 
+async def keep_awake():
+    """Render free instances sleep after 15 min without inbound traffic: ping our own public URL every 10 min."""
+    import httpx
+    async with httpx.AsyncClient(timeout=30) as client:
+        while True:
+            await asyncio.sleep(600)
+            try:
+                r = await client.get(f"{PUBLIC_URL}/health")
+                log.info("keep-awake ping: %s", r.status_code)
+            except Exception as e:  # noqa: BLE001
+                log.warning("keep-awake ping failed: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global BOT
     await asyncio.to_thread(db.con)  # open DB / warm up
     await asyncio.to_thread(db.run_sql, "SELECT count(*) FROM deals")
     log.info("LLM providers: %s", llm.configured())
+    await store.init()
+    pinger = asyncio.create_task(keep_awake()) if PUBLIC_URL else None
     BOT = build_bot()
     if BOT:
         await BOT.initialize()
@@ -172,6 +188,9 @@ async def lifespan(_: FastAPI):
             await BOT.updater.start_polling(allowed_updates=["message"])
             log.info("Telegram polling started")
     yield
+    if pinger:
+        pinger.cancel()
+    await store.close()
     if BOT:
         if BOT.updater and BOT.updater.running:
             await BOT.updater.stop()
@@ -217,6 +236,7 @@ async def api_ask(request: Request):
     hist = [(h.get("q", ""), h.get("a", "")) for h in body.get("history", [])[-2:] if isinstance(h, dict)]
     res = await agent.ask(q, hist)
     log.info("WEB Q: %s | %.1fs %s | A: %s", q[:200], res.seconds, res.provider, res.answer[:200].replace("\n", " "))
+    asyncio.create_task(store.save(0, q, res.answer, res.ok, res.seconds, res.provider, res.queries, "web"))
     return {"answer": res.answer, "ok": res.ok, "seconds": round(res.seconds, 1), "provider": res.provider,
             "queries": [q for q in res.queries if not q.get("error")]}
 
